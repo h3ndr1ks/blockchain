@@ -6,7 +6,7 @@ use std::fmt::{Display, Formatter};
 pub struct Hash([u8; 32]);
 
 impl Hash {
-    pub fn complies_with_difficulty(&self, mut difficulty: usize) -> bool {
+    pub fn complies_with_difficulty(&self, difficulty: usize) -> bool {
         self.0.iter()
             .take_while(|&&byte| byte == 0)
             .count() >= difficulty
