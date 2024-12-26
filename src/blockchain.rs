@@ -1,6 +1,7 @@
+use crate::block::Block;
+use crate::hash::Hash;
+use jiff::Zoned;
 use std::fmt::{Display, Formatter};
-use jiff::{Zoned};
-use crate::block::{Block, Hash};
 
 #[derive(Debug)]
 pub struct Blockchain {
@@ -10,15 +11,13 @@ pub struct Blockchain {
 impl Blockchain {
     pub fn new() -> Self {
         Blockchain {
-            chain: vec![
-                Block {
-                    index: 0,
-                    timestamp: Zoned::now(),
-                    data: vec![],
-                    nonce: 0,
-                    prior_hash: Hash::empty(),
-                }
-            ]
+            chain: vec![Block {
+                index: 0,
+                timestamp: Zoned::now(),
+                data: vec![],
+                nonce: 0,
+                prior_hash: Hash::empty(),
+            }],
         }
     }
 
@@ -48,7 +47,7 @@ impl Blockchain {
             prior_hash: last_block.hash(),
         };
 
-        while !new_block.hash().complies_with_difficulty(difficulty) {
+        while new_block.hash().leading_zeros() < difficulty {
             nonce += 1;
             new_block.nonce = nonce;
         }

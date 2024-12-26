@@ -1,28 +1,7 @@
+use crate::hash::Hash;
 use jiff::Zoned;
 use sha2::{Digest, Sha256};
-use std::fmt::{Display, Formatter};
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Hash([u8; 32]);
-
-impl Hash {
-    pub fn complies_with_difficulty(&self, difficulty: usize) -> bool {
-        self.0.iter()
-            .take_while(|&&byte| byte == 0)
-            .count() >= difficulty
-    }
-
-    pub fn empty() -> Self {
-        Hash([0; 32])
-    }
-}
-
-impl Display for Hash {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", hex::encode(self.0))
-    }
-}
-
+use std::fmt::Display;
 
 #[derive(Clone, Debug)]
 pub struct Block {
@@ -40,15 +19,15 @@ impl Block {
         hasher.update(self.timestamp.to_string());
         hasher.update(&self.data);
         hasher.update(self.nonce.to_be_bytes());
-        hasher.update(self.prior_hash.0);
+        hasher.update(&self.prior_hash);
 
         let hash256 = hasher.finalize();
-        Hash(hash256[..32].try_into().unwrap())
+        Hash::new(hash256[..32].try_into().unwrap())
     }
 }
 
 impl Display for Block {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {} {} {}", self.index, self.timestamp, self.nonce, self.prior_hash)
+        write!(f, "Block(idx={}, hash=\"{}\")", self.index, self.hash())
     }
 }
