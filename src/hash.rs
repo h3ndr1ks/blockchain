@@ -1,17 +1,30 @@
+use hex::FromHexError;
 use std::fmt::{Display, Formatter};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Hash([u8; 32]);
+
+#[derive(Debug)]
+pub enum HashError {
+    FromHexError(FromHexError),
+    LengthError(usize),
+}
 
 impl Hash {
     pub fn new(data: [u8; 32]) -> Self {
         Hash(data)
     }
 
-    pub fn try_from_hash(hex: &str) -> Self {
-        // TODO: remove this .unwrap()
-        let result = hex::decode(hex).unwrap();
-        Hash::new(result.try_into().unwrap())
+    pub fn try_from_hex(hex: &str) -> Result<Self, HashError> {
+        let result = hex::decode(hex);
+        if result.is_err() {
+            return Err(HashError::FromHexError(result.err().unwrap()));
+        }
+        let result = result.unwrap();
+        if result.len() != 32 {
+            return Err(HashError::LengthError(result.len()));
+        }
+        Ok(Hash::new(result.try_into().unwrap()))
     }
 
     pub fn empty() -> Self {
@@ -39,7 +52,8 @@ impl AsRef<[u8]> for Hash {
 
 #[cfg(test)]
 mod test {
-    use crate::hash::Hash;
+    use crate::hash::{Hash, HashError};
+    use hex::FromHexError;
 
     #[test]
     fn leading_zeros() {
@@ -76,7 +90,23 @@ mod test {
     #[test]
     fn from_hex() {
         let hex = "000000202081f1c5c1a9a6f228172c7000c09aa1740972be3b81b4b0b5087f9c";
-        let hash = Hash::try_from_hash(hex);
+        let hash = Hash::try_from_hex(hex).unwrap();
         assert_eq!(hash.to_string(), hex);
+
+        let HashError::FromHexError(err) = Hash::try_from_hex("zz").err().unwrap() else {
+            panic!()
+        };
+        assert_eq!(err, FromHexError::InvalidHexCharacter { c: 'z', index: 0 });
+
+        let HashError::FromHexError(err) = Hash::try_from_hex("z").err().unwrap() else {
+            panic!()
+        };
+        assert_eq!(err, FromHexError::OddLength);
+
+        let HashError::LengthError(actual_length) = Hash::try_from_hex("0000").err().unwrap()
+        else {
+            panic!()
+        };
+        assert_eq!(actual_length, 2);
     }
 }

@@ -104,18 +104,20 @@ mod test {
             timestamp: Zoned::from_str("2024-12-27T22:46:02.827648+01:00[Europe/Berlin]").unwrap(),
             data: vec![0, 1, 255],
             nonce: 8486214,
-            prior_hash: Hash::try_from_hash(
+            prior_hash: Hash::try_from_hex(
                 "000000b6bbc35e2d25e0694c45670a0321fa3c33fcc67a0c6abf971d2f8a718a",
-            ),
+            )
+            .unwrap(),
         });
         blockchain.chain.push(Block {
             index: 2,
             timestamp: Zoned::from_str("2024-12-27T22:46:08.524718+01:00[Europe/Berlin]").unwrap(),
             data: vec![],
             nonce: 15393667,
-            prior_hash: Hash::try_from_hash(
+            prior_hash: Hash::try_from_hex(
                 "000000202081f1c5c1a9a6f228172c7000c09aa1740972be3b81b4b0b5087f9c",
-            ),
+            )
+            .unwrap(),
         });
         blockchain
     }
